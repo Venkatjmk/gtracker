@@ -10,11 +10,11 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 
-import com.goal.tracking.beans.Goal;
-import com.goal.tracking.beans.Task;
-import com.goal.tracking.beans.TaskCategory;
-import com.goal.tracking.beans.UserRole;
-import com.goal.tracking.beans.Users;
+import com.goal.tracking.entities.Goal;
+import com.goal.tracking.entities.Task;
+import com.goal.tracking.entities.TaskCategory;
+import com.goal.tracking.entities.UserRole;
+import com.goal.tracking.entities.Users;
 
 public final class HibernateUtils {
 

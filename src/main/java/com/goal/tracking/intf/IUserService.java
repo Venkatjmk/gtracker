@@ -2,29 +2,24 @@ package com.goal.tracking.intf;
 
 import java.util.List;
 
-import com.goal.tracking.beans.UserRole;
-import com.goal.tracking.beans.Users;
+import com.goal.tracking.entities.Users;
+import com.goal.tracking.exceptions.SystemException;
 
 public interface IUserService {
 
-	public Users getUser(int userId);
+	// users API
+	public Users getUserById(int userId) throws SystemException;
 	
-	public List<Users> getAllUsers();
+	public List<Users> getAllUsers() throws SystemException;
 	
-	public boolean addNewUser(Users user);
+	public Users addNewUser(Users user) throws SystemException;
 	
-	public boolean updateUser(Users user);
+	public Users updateUser(Users user) throws SystemException;
 	
-	public boolean deleteUser(int userId);
+	public Users deleteUserById(int userId) throws SystemException;
 	
-	public List<UserRole> getAllRoles();
+	public boolean checkIfValidUser(Users user) throws SystemException;
 	
-	public UserRole getRole(int roleId);
-	
-	public boolean addNewRole(UserRole role);
-
-	public boolean updateRole(UserRole role);
-
-	public boolean deleteRole(int roleId);
+	public boolean isEmptyUser(Users user) throws SystemException;
 	
 }

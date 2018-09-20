@@ -2,29 +2,23 @@ package com.goal.tracking.intf;
 
 import java.util.List;
 
-import com.goal.tracking.beans.Task;
-import com.goal.tracking.beans.TaskCategory;
+import com.goal.tracking.entities.Task;
+import com.goal.tracking.exceptions.SystemException;
 
 public interface ITaskService {
 
-	public List<TaskCategory> getAllCategories();
+	public List<Task> getAllTasks() throws SystemException;
 	
-	public TaskCategory getTaskCategory(int categoryId);
+	public Task getTaskById(int taskId) throws SystemException;
 	
-	public boolean addNewCategory(TaskCategory taskCategory);
+	public Task addNewTask(Task task) throws SystemException;
 	
-	public boolean updateCategory(TaskCategory taskCategory);
+	public Task updateTask(Task task) throws SystemException;
 	
-	public boolean deleteCategory(int categoryId);
+	public Task deleteTaskById(int taskId) throws SystemException;
 	
-	public List<Task> getAllTasks();
+	public boolean checkIfValidTask(Task task) throws SystemException;
 	
-	public Task getTask(int taskId);
-	
-	public boolean addNewTask(Task task);
-	
-	public boolean updateTask(Task task);
-	
-	public boolean deleteTask(int taskId);
+	public boolean isEmptyTask(Task task);
 	
 }

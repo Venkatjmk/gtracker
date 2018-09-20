@@ -4,71 +4,133 @@ import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import com.goal.tracking.beans.Goal;
-import com.goal.tracking.beans.Users;
+import com.goal.tracking.controllers.TaskController;
+import com.goal.tracking.entities.Goal;
+import com.goal.tracking.exceptions.SystemException;
 import com.goal.tracking.intf.IGoalService;
+import com.goal.tracking.utils.StringUtils;
 
 @Component
 public class GoalService extends AbstractService implements IGoalService {
 
-	public Goal getGoal(int goalId) {
-		return getGoal(goalId, getSessionFactory().openSession());
+	private final Logger logger = LoggerFactory.getLogger(TaskController.class);
+	
+	public Goal getGoalById(int goalId) throws SystemException {
+		logger.info("getGoalById(int) invoked...");
+		Session session = getSessionFactory().openSession();
+		Goal goal = getGoalById(goalId, session);
+		
+		if (goal == null) {
+			throw new SystemException("No goals found for the given id", HttpStatus.NOT_FOUND);
+		}
+		
+		return goal;
 	}
 	
-	public Goal getGoal(int goalId, Session session) {
-		Query<Goal> anGoalQuery = session.createQuery("from Goal where id = :goalId", Goal.class);
-		anGoalQuery.setParameter("goalId", goalId);
-		return anGoalQuery.getSingleResult();
+	public Goal getGoalById(int goalId, Session session) throws SystemException {
+		logger.info("getGoalById(int, session) invoked...");
+		try {
+			Query<Goal> anGoalQuery = session.createQuery("from Goal where id = :goalId", Goal.class);
+			anGoalQuery.setParameter("goalId", goalId);
+			return anGoalQuery.getSingleResult();
+		} catch (HibernateException hibEx) {
+			hibEx.printStackTrace();
+			throw new SystemException("No goals found for the given id", HttpStatus.NOT_FOUND); 
+		}
 	}
 
-	public List<Goal> getAllGoals() {
+	public List<Goal> getAllGoals() throws SystemException {
+		logger.info("getAllGoals() invoked...");
 		Session session = getSessionFactory().openSession();
 		Query<Goal> allGoals = session.createQuery("from Goal g order by u.createdTime", Goal.class);
 		return allGoals.getResultList();
 	}
 
-	public boolean addNewGoal(Goal goal) {
+	public Goal addNewGoal(Goal goal) throws SystemException {
+		logger.info("addNewGoal(Goal) invoked...");
 		Session session = getSessionFactory().openSession();
+		Transaction tx = session.beginTransaction();
 		try {
 			session.save(goal);
-			return true;
+			tx.commit();
+			return goal;
 		} catch (HibernateException hibEx) {
+			tx.rollback();
 			hibEx.printStackTrace();
-			return false;
+			throw new SystemException("Given goal is not deleted", HttpStatus.NOT_MODIFIED);
+		} finally {
+			session.close();	
+		}
+	}
+	
+	public boolean checkIfValidGoal(Goal goal) throws SystemException {
+		String msg = null;
+		
+		if (goal == null) {
+			msg = "Goal object is empty";
+		} else if (StringUtils.isEmpty(goal.getName())) {
+			msg = "Goal is missing";
+		} else if (StringUtils.isEmpty(goal.getDescription())) {
+			msg = "Description is missing";
+		}
+
+		if (msg != null) {
+			throw new SystemException(msg, HttpStatus.BAD_REQUEST);
+		}
+		
+		return true;
+	}
+	
+	public boolean isEmptyGoal(Goal goal) {
+		if (goal == null) {
+			return true;
+		}
+		
+		return false;
+	}
+
+	public Goal updateGoal(Goal goal) throws SystemException {
+		logger.info("updateGoal(Goal) invoked...");
+		Session session = getSessionFactory().openSession();
+		Transaction tx = session.beginTransaction();
+		try {
+			session.update(goal);
+			tx.commit();
+			return goal;
+		} catch (HibernateException hibEx) {
+			tx.rollback();
+			hibEx.printStackTrace();
+			throw new SystemException("Given goal is not deleted", HttpStatus.NOT_MODIFIED);
 		} finally {
 			session.close();	
 		}
 	}
 
-	public boolean updateGoal(Goal goal) {
+	public Goal deleteGoalById(int goalId) throws SystemException {
+		logger.info("deleteGoalById(int) invoked...");
 		Session session = getSessionFactory().openSession();
+		Transaction tx = session.beginTransaction();
 		try {
-			session.saveOrUpdate(goal);
-			return true;
-		} catch (HibernateException hibEx) {
-			hibEx.printStackTrace();
-			return false;
-		} finally {
-			session.close();	
-		}
-	}
-
-	public boolean deleteGoal(int goalId) {
-		Session session = getSessionFactory().openSession();
-		try {
-			Goal goal = getGoal(goalId, session);
-			if (goal != null) {
-				session.delete(goal);
-				return true;
+			Goal goal = getGoalById(goalId, session);
+			
+			if (goal == null) {
+				throw new SystemException("Given goal id not exists", HttpStatus.NOT_FOUND);
 			}
 			
-			return false;
+			session.delete(goal);
+			tx.commit();
+			return goal;
 		} catch (HibernateException hibEx) {
+			tx.rollback();
 			hibEx.printStackTrace();
-			return false;
+			throw new SystemException("Given goal is not deleted", HttpStatus.NOT_MODIFIED);
 		} finally {
 			session.close();
 		}
