@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.goal.tracking.entities.Goal;
 import com.goal.tracking.entities.TaskCategory;
 import com.goal.tracking.exceptions.SystemException;
 import com.goal.tracking.intf.ICategoryService;
@@ -111,6 +112,7 @@ public class CategoryService extends AbstractService implements ICategoryService
 	
 	public TaskCategory updateCategory(String oldCategoryName, String newCategoryName) throws SystemException {
 		logger.info("updateCategory(String, String) invoked...");
+		
 		Session session = getSessionFactory().openSession();
 		TaskCategory existingCategory = getCategoryByName(oldCategoryName, session);
 		
@@ -135,6 +137,7 @@ public class CategoryService extends AbstractService implements ICategoryService
 
 	public TaskCategory updateCategory(TaskCategory Category) throws SystemException {
 		logger.info("updateCategory(TaskCategory) invoked...");
+		
 		Session session = getSessionFactory().openSession();
 //		TaskCategory existingCategory = getCategoryById(Category.getCategoryId(), session);
 //		
@@ -184,5 +187,5 @@ public class CategoryService extends AbstractService implements ICategoryService
 	public boolean isValidCategory(String CategoryName) {
 		return !StringUtils.isEmpty(CategoryName);
 	}
-
+	
 }

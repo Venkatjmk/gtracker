@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import com.goal.tracking.entities.Goal;
 import com.goal.tracking.entities.Users;
 import com.goal.tracking.exceptions.SystemException;
 import com.goal.tracking.intf.IUserService;
@@ -77,6 +78,7 @@ public class UserService extends AbstractService implements IUserService {
 	}
 	
 	public List<Users> getAllUsers() throws SystemException {
+		logger.info("getAllUsers() invoked");
 		Session session = getSessionFactory().openSession();
 		try {
 			Query<Users> allUsers = session.createQuery("from Users u order by u.firstName", Users.class);
@@ -96,6 +98,7 @@ public class UserService extends AbstractService implements IUserService {
 	}
 
 	public Users addNewUser(Users user) throws SystemException {
+		logger.info("addNewUser(user) invoked for username: " + user.getEmailId());
 		checkIfValidUser(user);
 		
 		Session session = getSessionFactory().openSession();
@@ -115,6 +118,7 @@ public class UserService extends AbstractService implements IUserService {
 	}
 
 	public Users updateUser(Users user) throws SystemException {
+		logger.info("updateUser(user) invoked for username: " + user.getEmailId());
 		if (getUserById(user.getUserId()) == null) {
 			throw new SystemException("User is not available to modify", HttpStatus.NOT_FOUND);
 		}
@@ -135,6 +139,7 @@ public class UserService extends AbstractService implements IUserService {
 	}
 
 	public Users deleteUserById(int userId) throws SystemException {
+		logger.info("deleteUser(int) invoked for userId: " + userId);
 		Session session = getSessionFactory().openSession();
 		Users user = getUserById(userId, session);
 		
@@ -152,6 +157,36 @@ public class UserService extends AbstractService implements IUserService {
 			tx.rollback();
 			hibEx.printStackTrace();
 			throw new SystemException(hibEx.getMessage(), HttpStatus.NOT_MODIFIED);
+		} finally {
+			session.close();
+		}
+	}
+
+	public List<Users> getUsersForRoleIds(int[] roleIds) {
+		logger.info("getUsersForRoleIds(int[]) invoked for roleIds: " + roleIds);
+		Session session = getSessionFactory().openSession();
+		try {
+			Query<Users> anUserRoleQuery = session.createQuery("from Users where roleId IN (:roleIds)", Users.class);
+			anUserRoleQuery.setParameter("roleIds", roleIds);
+			return anUserRoleQuery.list();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			session.close();
+		}
+	}
+	
+	public List<Users> getUsersForRoleNames(String[] roleNames) {
+		logger.info("getUsersForRoleNames(String[]) invoked for roleNames: " + roleNames);
+		Session session = getSessionFactory().openSession();
+		try {
+			Query<Users> anUserRoleQuery = session.createQuery("from Users where roleId IN (select roleId from Roles where roleName IN (:roleNames))", Users.class);
+			anUserRoleQuery.setParameter("roleIds", roleNames);
+			return anUserRoleQuery.list();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		} finally {
 			session.close();
 		}

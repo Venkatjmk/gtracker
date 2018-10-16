@@ -2,9 +2,10 @@ package com.goal.tracking.enums;
 
 public enum GoalStatus {
 
+	notStarted,
 	pending,
-	achieved,
-	cancelled,
-	onhold
+	onhold,
+	completed,
+	cancelled
 	
 }

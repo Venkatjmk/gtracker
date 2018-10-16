@@ -12,7 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.goal.tracking.entities.Goal;
 import com.goal.tracking.entities.UserRole;
+import com.goal.tracking.entities.Users;
 import com.goal.tracking.exceptions.SystemException;
 import com.goal.tracking.intf.IRoleService;
 
@@ -22,6 +24,7 @@ public class RoleService extends AbstractService implements IRoleService {
 	private final Logger logger = LoggerFactory.getLogger(RoleService.class);
 	
 	public List<UserRole> getAllRoles() throws SystemException {
+		logger.info("getAllRoles() invoked...");
 		try {
 			Session session = getSessionFactory().openSession();
 			Query<UserRole> allRoles = session.createQuery("from Roles u order by u.roleName", UserRole.class);
@@ -33,6 +36,8 @@ public class RoleService extends AbstractService implements IRoleService {
 	}
 
 	public UserRole getRoleById(int roleId) throws SystemException {
+		logger.info("getRoleById(int) invoked...");
+		
 		Session session = getSessionFactory().openSession();
 		UserRole role = getRoleById(roleId, session);
 		
@@ -45,6 +50,8 @@ public class RoleService extends AbstractService implements IRoleService {
 	}
 	
 	public UserRole getRoleById(int roleId, Session session) throws SystemException {
+		logger.info("getRoleById(int, Session) invoked...");
+		
 		try {
 			Query<UserRole> anUserRoleQuery = session.createQuery("from Roles where roleId = :roleId", UserRole.class);
 			anUserRoleQuery.setParameter("roleId", roleId);
@@ -56,6 +63,8 @@ public class RoleService extends AbstractService implements IRoleService {
 	}
 
 	public UserRole getRoleByName(String roleName) throws SystemException {
+		logger.info("getRoleByName(String) invoked...");
+		
 		Session session = getSessionFactory().openSession();
 		UserRole role = getRoleByName(roleName, session);
 		
@@ -68,6 +77,8 @@ public class RoleService extends AbstractService implements IRoleService {
 	}
 	
 	public UserRole getRoleByName(String roleName, Session session) throws SystemException {
+		logger.info("getRoleByName(String, Session) invoked...");
+		
 		try {
 			Query<UserRole> anUserRoleQuery = session.createQuery("from Roles where roleName = :roleName", UserRole.class);
 			anUserRoleQuery.setParameter("roleName", roleName);
@@ -79,6 +90,8 @@ public class RoleService extends AbstractService implements IRoleService {
 	}
 	
 	public UserRole addNewRole(String roleName) throws SystemException {
+		logger.info("addNewRole(String) invoked...");
+		
 		Session session = getSessionFactory().openSession();
 		Transaction tx = session.beginTransaction();
 		try {
@@ -96,6 +109,8 @@ public class RoleService extends AbstractService implements IRoleService {
 	}
 	
 	public UserRole updateRole(String oldRoleName, String newRoleName) throws SystemException {
+		logger.info("updateRole(String, String) invoked...");
+		
 		Session session = getSessionFactory().openSession();
 		UserRole existingRole = getRoleByName(oldRoleName, session);
 		
@@ -119,6 +134,8 @@ public class RoleService extends AbstractService implements IRoleService {
 	}
 
 	public UserRole updateRole(UserRole role) throws SystemException {
+		logger.info("updateRole(UserRole) invoked...");
+		
 		Session session = getSessionFactory().openSession();
 		UserRole existingRole = getRoleById(role.getRoleId(), session);
 		
@@ -145,6 +162,8 @@ public class RoleService extends AbstractService implements IRoleService {
 	}
 
 	public UserRole deleteRoleById(int roleId) throws SystemException {
+		logger.info("deleteRoleById(int) invoked...");
+		
 		Session session = getSessionFactory().openSession();
 		UserRole userRole = getRoleById(roleId, session);
 		

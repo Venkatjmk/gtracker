@@ -135,5 +135,67 @@ public class GoalService extends AbstractService implements IGoalService {
 			session.close();
 		}
 	}
+	
+	public List<Goal> getGoalsForUsers(int[] userIds) {
+		logger.info("getGoalsForUsers(int[]) invoked for userIds: " + userIds);
+		Session session = getSessionFactory().openSession();
+		
+		try {
+			Query<Goal> query = session.createQuery("From Goals where userId in (:userIds)", Goal.class);
+			query.setParameter("userIds", userIds);
+			return query.list();
+		} catch (HibernateException hibEx) {
+			hibEx.printStackTrace();
+			throw new SystemException("Unable to fetch the goals for given set of users", HttpStatus.INTERNAL_SERVER_ERROR);
+		} finally {
+			session.close();
+		}
+		
+	}
+	
+	public List<Goal> getGoalsForUsers(String[] userNames) {
+		logger.info("getGoalsForUserNames(String[]) invoked for userNames: " + userNames);
+		Session session = getSessionFactory().openSession();
+		
+		try {
+			Query<Goal> query = session.createQuery("From Goals where userId IN (select userId From Users where emailId IN (:userNames))", Goal.class);
+			query.setParameter("userNames", userNames);
+			return query.list();
+		} catch (HibernateException hibEx) {
+			hibEx.printStackTrace();
+			throw new SystemException("Unable to fetch the goals for given set of users", HttpStatus.INTERNAL_SERVER_ERROR);
+		} finally {
+			session.close();
+		}
+		
+	}
+	
+	public List<Goal> getGoalsForUsersWithTasks(int[] userIds) {
+		logger.info("getGoalsForUsersWithTasks(int[]) invoked for userIds: " + userIds);
+		Session session = getSessionFactory().openSession();
+		
+		try {
+			Query<Goal> query = session.createQuery("From Goals g join Tasks t where g.goalId = t.goalId and g.userId IN (:userIds)", Goal.class);
+			query.setParameter("userIds", userIds);
+			return query.list();
+		} catch (HibernateException hibEx) {
+			hibEx.printStackTrace();
+			throw new SystemException("Unable to fetch goals for given set of users", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	public List<Goal> getGoalsForUsersWithTasks(String[] userNames) {
+		logger.info("getGoalsForUsersWithTasks(String[]) invoked for userNames: " + userNames);
+		Session session = getSessionFactory().openSession();
+		
+		try {
+			Query<Goal> query = session.createQuery("From Goals g join Tasks t where g.goalId = t.goalId and g.userId IN (select userId from Users where userName IN (:userNames))", Goal.class);
+			query.setParameter("userNames", userNames);
+			return query.list();
+		} catch (HibernateException hibEx) {
+			hibEx.printStackTrace();
+			throw new SystemException("Unable to fetch goals for given set of users", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 }

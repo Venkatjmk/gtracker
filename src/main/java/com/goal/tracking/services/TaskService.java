@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import com.goal.tracking.entities.Goal;
 import com.goal.tracking.entities.Task;
 import com.goal.tracking.exceptions.SystemException;
 import com.goal.tracking.intf.ITaskService;
@@ -76,6 +77,8 @@ public class TaskService extends AbstractService implements ITaskService {
 	}
 	
 	public List<Task> getAllTasks() throws SystemException {
+		logger.info("getAllTasks() invoked...");
+		
 		Session session = getSessionFactory().openSession();
 		try {
 			Query<Task> allTask = session.createQuery("from Task t order by t.createdTime", Task.class);
@@ -95,6 +98,8 @@ public class TaskService extends AbstractService implements ITaskService {
 	}
 
 	public Task addNewTask(Task task) throws SystemException {
+		logger.info("addNewTask(Task) invoked for task: " + task.getTaskDesc());
+		
 		checkIfValidTask(task);
 		
 		Session session = getSessionFactory().openSession();
@@ -114,6 +119,8 @@ public class TaskService extends AbstractService implements ITaskService {
 	}
 
 	public Task updateTask(Task task) throws SystemException {
+		logger.info("updateTask(Task) invoked for taskId: " + task.getTaskId());
+		
 		if (getTaskById(task.getTaskId()) == null) {
 			throw new SystemException("Task is not available to modify", HttpStatus.NOT_FOUND);
 		}
@@ -134,6 +141,8 @@ public class TaskService extends AbstractService implements ITaskService {
 	}
 
 	public Task deleteTaskById(int taskId) throws SystemException {
+		logger.info("deleteTaskById(Task) invoked for roleNames: " + taskId);
+		
 		Session session = getSessionFactory().openSession();
 		Task task = getTaskById(taskId, session);
 		
@@ -151,6 +160,86 @@ public class TaskService extends AbstractService implements ITaskService {
 			tx.rollback();
 			hibEx.printStackTrace();
 			throw new SystemException(hibEx.getMessage(), HttpStatus.NOT_MODIFIED);
+		} finally {
+			session.close();
+		}
+	}
+	
+	public List<Task> getTasksForCategories(int[] categoryIds) {
+		logger.info("getTasksForCategories(int[]) invoked for categoryIds: " + categoryIds);
+		
+		Session session = getSessionFactory().openSession();
+		try {
+			Query<Task> query = session.createQuery("From Tasks where categoryId IN (:categoryIds)", Task.class);
+			query.setParameter("categoryIds", categoryIds);
+			return query.list();
+		} catch (HibernateException hibEx) {
+			hibEx.printStackTrace();
+			throw new SystemException("Unable to fetch Tasks associated for given categories", HttpStatus.INTERNAL_SERVER_ERROR);
+		} finally {
+			session.close();
+		}
+	}
+	
+	public List<Task> getTasksForCategories(String[] categoryNames) {
+		logger.info("getTasksForCategories(String[]) invoked for categoryNames: " + categoryNames);
+		
+		Session session = getSessionFactory().openSession();
+		try {
+			Query<Task> query = session.createQuery("", Task.class);
+			query.setParameter("categoryNames", categoryNames);
+			return query.list();
+		} catch (HibernateException hibEx) {
+			hibEx.printStackTrace();
+			throw new SystemException("Unable to fetch Tasks associated for given categories", HttpStatus.INTERNAL_SERVER_ERROR);
+		} finally {
+			session.close();
+		}
+	}
+
+	public List<Task> getTasksForUsers(int[] userIds) {
+		logger.info("getTasksForUsers(int[]) invoked for userIds: " + userIds);
+		
+		Session session = getSessionFactory().openSession();
+		try {
+			Query<Task> query = session.createQuery("From Tasks where userId IN (:userIds)", Task.class);
+			query.setParameter("userIds", userIds);
+			return query.list();
+		} catch (HibernateException hibEx) {
+			hibEx.printStackTrace();
+			throw new SystemException("Unable to fetch Tasks associated for given users", HttpStatus.INTERNAL_SERVER_ERROR);
+		} finally {
+			session.close();
+		}
+	}
+	
+	public List<Task> getTasksForUsers(String[] userNames) {
+		logger.info("getTasksForUsers(String[]) invoked for userNames: " + userNames);
+		
+		Session session = getSessionFactory().openSession();
+		try {
+			Query<Task> query = session.createQuery("From Tasks where userId IN (select userId from Users where emailId IN (:userNames))", Task.class);
+			query.setParameter("userNames", userNames);
+			return query.list();
+		} catch (HibernateException hibEx) {
+			hibEx.printStackTrace();
+			throw new SystemException("Unable to fetch Tasks associated for given users", HttpStatus.INTERNAL_SERVER_ERROR);
+		} finally {
+			session.close();
+		}
+	}
+	
+	public List<Task> getTasksForGoals(int[] goalIds) {
+		logger.info("getTasksForGoals(int[]) invoked for goalIds: " + goalIds);
+		
+		Session session = getSessionFactory().openSession();
+		try {
+			Query<Task> query = session.createQuery("From Tasks where goalId IN (:goalIds)", Task.class);
+			query.setParameter("goalIds", goalIds);
+			return query.list();
+		} catch (HibernateException hibEx) {
+			hibEx.printStackTrace();
+			throw new SystemException("Unable to fetch Tasks associated for given users", HttpStatus.INTERNAL_SERVER_ERROR);
 		} finally {
 			session.close();
 		}
